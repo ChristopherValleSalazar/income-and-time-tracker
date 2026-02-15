@@ -47,6 +47,7 @@ function addRowAmz() {
     cell3.addEventListener("input", () => {
         updateAmountForRow(newRow);
     })
+    
 }
 
 function updateAmountForRow(row) {
