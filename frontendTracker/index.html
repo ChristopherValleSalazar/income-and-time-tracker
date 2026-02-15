@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programming Hours</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
+</head>
+<body>
+    <header id="header">
+        <h2>Recorded Hours</h2>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="amz.html">Amazon Payment</a>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <h1>Programming Hours Recorded 2026</h1>
+    </section>
+    
+    <button class="add-bttn" onclick="addRow()">Add New Row</button>
+    <button class="save-bttn" onclick="saveProgress()">Save Progress</button>
+
+    <table id="table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Date</th>
+                <th>Time (hh:mm)</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <div id="totalHoursBox">
+        Total Hours: <span id="totalHoursValue">00:00</span>
+    </div>
+
+</body>
+</html>

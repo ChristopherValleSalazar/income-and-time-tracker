@@ -1,0 +1,90 @@
+#table, #amzTable {
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    border-collapse: collapse;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
+}
+
+td, th {
+    border: 1px solid black;
+    text-align: left;
+    padding: 8px;
+}
+
+th {
+    text-align: center;
+}
+
+.description {
+    max-width: 50px;
+}
+
+.editable {
+    cursor: text;
+    min-width: 106px;
+}
+
+.editable:empty::before {
+    content: attr(data-placeholder);
+    color: #999;
+    pointer-events: none;
+}
+
+.amount:empty::before {
+    content: attr(data-placeholder);
+    color: #999;
+    pointer-events: none;
+}
+
+.person {
+    padding: 5px;
+
+}
+
+.add-bttn, .save-bttn {
+    cursor: pointer;
+    border-radius: 1rem;
+    padding: .75em 1em;
+    margin-bottom: 20px;
+    background-color: white;
+    font-weight: bold;
+    color: purple;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.add-bttn:hover, .save-bttn:hover {
+    background-color: rgb(180, 40, 180);
+    color: white;
+}
+
+#header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid black;
+  padding: 20px 0;
+}
+
+body {
+  font-family: serif;
+  margin: 0;
+  padding: 0 40px;
+}
+
+#totalHoursBox {
+    display: inline-block;         /* Shrink to fit content */
+    padding: 15px 25px;            /* Space inside the box */
+    background-color: #f0f4f8;     /* Light blue-gray background */
+    border: 2px solid #0077cc;     /* Blue border */
+    border-radius: 12px;           /* Rounded corners */
+    font-size: 18px;
+    font-weight: bold;
+    color: #0077cc;                /* Text color */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Soft shadow */
+    margin-top: 20px;
+    transition: background-color 0.3s ease, color 0.3s ease; /* Smooth change */
+}
+
+#totalHoursBox:hover {
+    background-color: #0077cc;
+    color: white;
+}
