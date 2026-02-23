@@ -1,6 +1,7 @@
 package com.chrisV.hoursBackend.controller;
 
 import com.chrisV.hoursBackend.model.AmazonNames;
+import com.chrisV.hoursBackend.model.AmazonTransaction;
 import com.chrisV.hoursBackend.service.AmazonServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,8 +30,8 @@ public class AmazonTransactionController {
     }
 
     @GetMapping("/getAllRows")
-    public ResponseEntity<List<Map<String, String>>> loadAllAmzRows() {
-        return new ResponseEntity<>(service.loadAllAmzRows(), HttpStatus.OK);
+    public ResponseEntity<List<AmazonTransaction>> loadAllAmzRows() {
+        return new ResponseEntity<>(service.testingObjLoading(), HttpStatus.OK);
     }
 
     @GetMapping("/getAllWorkerNames")

@@ -18,6 +18,8 @@ public class AmazonServices {
     @Autowired
     AmazonTransactionRepo repo;
 
+    final
+
     public void saveAmzRows(List<Map<String, String>> transactions) {
         System.out.println(transactions.toString());
         List<AmazonTransaction> entities = transactions
@@ -38,12 +40,24 @@ public class AmazonServices {
                 .sorted(Comparator.comparing(AmazonTransaction::getDateOfWork))
                 .map(entity -> {
                     Map<String, String> entities = new HashMap<>();
-                    entities.put("date", String.valueOf(entity.getDateOfWork()));
+                    entities.put("dates", String.valueOf(entity.getDateOfWork()));
                     entities.put("amount", String.valueOf(entity.getAmount()));
                     entities.put("person", String.valueOf(entity.getPerson()));
                     entities.put("package", String.valueOf(entity.getPackageNum()));
                     return entities;
                 }).toList();
+    }
+
+    public List<AmazonTransaction> testingObjLoading() {
+        List<AmazonTransaction> transactions = repo.findAll()
+                        .stream()
+                .sorted(Comparator.comparing(AmazonTransaction::getDateOfWork))
+                .toList();
+
+        System.out.println(transactions);
+
+        return transactions;
+
     }
 
     public AmazonNames[] getAllWorkerName() {
@@ -66,10 +80,35 @@ public class AmazonServices {
 
         List<String> totalWeeklyPackages = generateTotalWeeklyPackages(weeklyDateRange);
         List<String> totalWeeklyAmounts = generateTotalWeeklyAmounts(weeklyDateRange);
-        return getMaps(weeklyDateRange, totalWeeklyAmounts, totalWeeklyPackages);
+        return createCompleteWeekReport(weeklyDateRange, totalWeeklyAmounts, totalWeeklyPackages);
     }
 
-    private List<Map<String, String>> getMaps(Map<LocalDate, List<AmazonTransaction>> weeklyDateRange, List<String> totalWeeklyAmounts, List<String> totalWeeklyPackages) {
+    private Map<LocalDate, List<AmazonTransaction>> generateFullWeekDateRange(List<AmazonTransaction> transactions) {
+        Map<LocalDate, List<AmazonTransaction>> grouped = transactions.stream()
+                .sorted(Comparator.comparing(AmazonTransaction::getDateOfWork))
+                .collect(Collectors.groupingBy(
+                        t -> t.getDateOfWork().with(DayOfWeek.MONDAY),
+                        TreeMap::new,
+                        Collectors.toList()
+                ))
+
+                .entrySet()
+                .stream()
+                .filter(entry -> entry.getValue().size() == 6) // 6 representing the quantity of days per week
+
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().stream()
+                                .sorted(Comparator.comparing(AmazonTransaction::getDateOfWork))
+                                .toList(),
+                        (a, b) -> a,
+                        TreeMap::new
+                ));
+
+        return grouped;
+    }
+
+    private List<Map<String, String>> createCompleteWeekReport(Map<LocalDate, List<AmazonTransaction>> weeklyDateRange, List<String> totalWeeklyAmounts, List<String> totalWeeklyPackages) {
         List<String> totalWeeklyDates = convertWeeklyDateRangeIntoString(weeklyDateRange);
 
         List<Map<String, String>> completeWeeklyReport = new ArrayList<>();
@@ -114,30 +153,7 @@ public class AmazonServices {
                 }).toList();
     }
 
-    private Map<LocalDate, List<AmazonTransaction>> generateFullWeekDateRange(List<AmazonTransaction> transactions) {
-        Map<LocalDate, List<AmazonTransaction>> grouped = transactions.stream()
-                .sorted(Comparator.comparing(AmazonTransaction::getDateOfWork))
-                .collect(Collectors.groupingBy(
-                        t -> t.getDateOfWork().with(DayOfWeek.MONDAY),
-                        TreeMap::new,
-                        Collectors.toList()
-                ))
 
-                .entrySet()
-                .stream()
-                .filter(entry -> entry.getValue().size() == 6)
-
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> entry.getValue().stream()
-                                .sorted(Comparator.comparing(AmazonTransaction::getDateOfWork))
-                                .toList(),
-                        (a, b) -> a,
-                        TreeMap::new
-                ));
-
-        return grouped;
-    }
 
     private Map<LocalDate, List<AmazonTransaction>> generateAnyWeekDateRange(List<AmazonTransaction> transactions) {
         Map<LocalDate, List<AmazonTransaction>> grouped = transactions.stream()

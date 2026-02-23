@@ -96,13 +96,13 @@ async function getAllRowsFromDB() {
         tr.contentEditable = "true";
 
         tr.insertCell().textContent = index + 1;
-        tr.insertCell().textContent = row.date;
-        tr.insertCell().textContent = row.package;
+        tr.insertCell().textContent = row.dateOfWork;
+        tr.insertCell().textContent = row.packageNum;
         tr.insertCell().textContent = row.amount;
         tr.insertCell().textContent = row.person;
     });
 
-    console.log(await getAllWorkerNames());
+    console.log(rows);
 
 }
 
