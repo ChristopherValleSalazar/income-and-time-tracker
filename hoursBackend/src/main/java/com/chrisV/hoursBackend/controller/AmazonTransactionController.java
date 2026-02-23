@@ -40,7 +40,7 @@ public class AmazonTransactionController {
 
     @GetMapping("/getAllTotalPerWeek")
     public ResponseEntity<List<Map<String, String>>> loadTotalPerWeek() {
-        return new ResponseEntity<>(service.loadWeeklyTotalPerPerson(), HttpStatus.OK);
+        return new ResponseEntity<>(service.loadWeeklyTotal(), HttpStatus.OK);
     }
         /*
         using this list will allow me to generate a total per person, I will make individual methods afterward
