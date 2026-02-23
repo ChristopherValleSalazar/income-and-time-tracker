@@ -101,6 +101,9 @@ async function getAllRowsFromDB() {
         tr.insertCell().textContent = row.amount;
         tr.insertCell().textContent = row.person;
     });
+
+    console.log(await getAllWorkerNames());
+
 }
 
 function saveProgressAmz() {

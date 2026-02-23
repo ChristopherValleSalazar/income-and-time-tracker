@@ -1,6 +1,6 @@
-package com.chrisV.hoursBackend.model;
+package com.chrisV.hoursBackend.dto;
 
-public record TableRowDTO(
+public record programmingHoursDTO(
         String Data,
         String hours,
         String description

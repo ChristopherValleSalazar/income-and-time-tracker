@@ -1,6 +1,6 @@
 package com.chrisV.hoursBackend.controller;
 
-import com.chrisV.hoursBackend.model.TableRow;
+import com.chrisV.hoursBackend.model.ProgrammingHours;
 import com.chrisV.hoursBackend.repo.TableRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,14 +27,14 @@ public class TableController {
     }
 
     @PostMapping("/saveTable")
-    public ResponseEntity<Void> saveTableRows(@RequestBody List<Map<String, String>> rows) {
+    public ResponseEntity<Void> saveProgrammingHourss(@RequestBody List<Map<String, String>> rows) {
 
         System.out.println(rows.toString());
 
-        List<TableRow> entities = rows
+        List<ProgrammingHours> entities = rows
                 .stream()
                 .map(entity -> {
-                    TableRow row = new TableRow();
+                    ProgrammingHours row = new ProgrammingHours();
                     row.setDate(LocalDate.parse(entity.get("date")));
                     row.setHours(new BigDecimal(entity.get("hours")));
                     row.setDescription(entity.get("description"));
@@ -47,17 +47,17 @@ public class TableController {
 
     @GetMapping("/getTotalHours")
     public ResponseEntity<BigDecimal> getTotalHours() {
-        List<TableRow> entities = repo.findAll(); //try to optimize by making one calling maybe from9 a different method in the service hehe
+        List<ProgrammingHours> entities = repo.findAll(); //try to optimize by making one calling maybe from9 a different method in the service hehe
 
         BigDecimal total = entities.stream()
-                .map(TableRow::getHours)
+                .map(ProgrammingHours::getHours)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return new ResponseEntity<>(total, HttpStatus.OK);
     }
 
     @GetMapping("/loadTable")
-    public ResponseEntity<List<Map<String, String>>> loadTableRows() {
+    public ResponseEntity<List<Map<String, String>>> loadProgrammingHourss() {
 
         return new ResponseEntity<>(repo.findAll().stream()
                 .map(entity -> {
@@ -68,7 +68,4 @@ public class TableController {
                     return m;
                 }).toList(), HttpStatus.OK);
     }
-
-
-
 }
