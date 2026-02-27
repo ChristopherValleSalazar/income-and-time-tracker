@@ -217,14 +217,14 @@ a:hover { text-decoration: underline; }
 #table,
 #amzTable,
 #workerSummaryTable,
-#monthlySummaryTable {
+#weeklySummaryTable {
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
 }
 
 #table th, #amzTable th,
-#workerSummaryTable th, #monthlySummaryTable th {
+#workerSummaryTable th, #weeklySummaryTable th {
   text-align: left;
   padding: 10px 16px;
   font-size: 12px;
@@ -237,7 +237,7 @@ a:hover { text-decoration: underline; }
 }
 
 #table td, #amzTable td,
-#workerSummaryTable td, #monthlySummaryTable td {
+#workerSummaryTable td, #weeklySummaryTable td {
   padding: 10px 16px;
   border-bottom: 1px solid var(--border);
   color: var(--text);
@@ -247,21 +247,21 @@ a:hover { text-decoration: underline; }
 #table tbody tr:nth-child(even),
 #amzTable tbody tr:nth-child(even),
 #workerSummaryTable tbody tr:nth-child(even),
-#monthlySummaryTable tbody tr:nth-child(even) {
+#weeklySummaryTable tbody tr:nth-child(even) {
   background: var(--bg-stripe);
 }
 
 #table tbody tr:hover,
 #amzTable tbody tr:hover,
 #workerSummaryTable tbody tr:hover,
-#monthlySummaryTable tbody tr:hover {
+#weeklySummaryTable tbody tr:hover {
   background: var(--bg-hover);
 }
 
 #table tbody tr:last-child td,
 #amzTable tbody tr:last-child td,
 #workerSummaryTable tbody tr:last-child td,
-#monthlySummaryTable tbody tr:last-child td {
+#weeklySummaryTable tbody tr:last-child td {
   border-bottom: none;
 }
 

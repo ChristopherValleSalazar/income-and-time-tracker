@@ -81,7 +81,7 @@ function calculateAmount(pkg) {
 document.addEventListener("DOMContentLoaded", () => {
     getAllRowsFromDB();
     loadWeeklyTotalsPerPerson();
-    getWeeklyTotal();
+    loadWeeklyTotal();
 });
 
 async function getAllRowsFromDB() {
@@ -148,25 +148,26 @@ async function loadWeeklyTotalsPerPerson() {
 
         rows.forEach(row => {
             const tr = tbody.insertRow();
-            tr.insertCell().textContent = row.name;
-            tr.insertCell().textContent = row.totalPackages;
-            tr.insertCell().textContent = `$${Number(row.totalEarned).toFixed(2)}`;
+            tr.insertCell().textContent = row.WeekRange;
+            tr.insertCell().textContent = row.Person;
+            tr.insertCell().textContent = row.TotalPackages;
+            tr.insertCell().textContent = row.TotalAmount;
         });
     } catch (error) {
         console.error("Failed to load worker summary:", error);
     }
 }
 
-async function getWeeklyTotal() {
+async function loadWeeklyTotal() {
     try {
         const rows = await api.getMonthlySummary();
-        const tbody = document.querySelector("#monthlySummaryTable tbody");
+        const tbody = document.querySelector("#weeklySummaryTable tbody");
 
         rows.forEach(row => {
             const tr = tbody.insertRow();
-            tr.insertCell().textContent = row.month;
-            tr.insertCell().textContent = row.totalPackages;
-            tr.insertCell().textContent = `$${Number(row.totalRevenue).toFixed(2)}`;
+            tr.insertCell().textContent = row["Range Of Dates"];
+            tr.insertCell().textContent = row["Total Packages"];
+            tr.insertCell().textContent = row["Total Amount"];
         });
     } catch (error) {
         console.error("Failed to load monthly summary:", error);

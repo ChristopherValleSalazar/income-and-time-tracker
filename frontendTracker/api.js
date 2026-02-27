@@ -56,7 +56,7 @@ export async function saveAmzTable(data) {
 }
 
 export async function getWorkerSummary() {
-    return getJSON("/api/amzTransaction/getWorkerSummary");
+    return getJSON("/api/amzTransaction/getWeeklyTotalsPerPerson");
 }
 
 export async function getMonthlySummary() {
