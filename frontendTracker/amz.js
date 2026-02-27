@@ -1,9 +1,12 @@
+import * as api from "./api.js";
+import "./theme.js";
+
 function addRowAmz() {
     const tableBody = document.getElementById("amzTable").getElementsByTagName('tbody')[0];
 
     let newRow = tableBody.insertRow(-1);
 
-    newRow.dataset.saved = "false"; //set all rows as not saved until their sent into database
+    newRow.dataset.saved = "false";
     
     let cell1 = newRow.insertCell(0);
     let cell2 = newRow.insertCell(1);
@@ -23,31 +26,32 @@ function addRowAmz() {
     cell3.classList.add("editable", "packages");
 
     cell4.contentEditable = "false";
-    cell4.dataset.placeholder = "$0.00"
+    cell4.dataset.placeholder = "$0.00";
     cell4.classList.add("amount");
 
     cell5.contentEditable = "false";
-    cell5.dataset.placeholder = "Who worked?"
+    cell5.dataset.placeholder = "Who worked?";
     cell5.classList.add("editable", "person");
 
     const personSelect = document.createElement("select");
     personSelect.classList.add("person");
 
-    getAllWorkerNames().then(testArray => {
-        testArray.forEach(name => {
+    api.getAllWorkerNames().then(names => {
+        names.forEach(name => {
             const option = document.createElement("option");
             option.value = name;
             option.textContent = name;
             personSelect.appendChild(option);
-        })
-    })
+        });
+    }).catch(error => {
+        console.error("Failed to load worker names:", error);
+    });
 
     cell5.appendChild(personSelect);
 
     cell3.addEventListener("input", () => {
         updateAmountForRow(newRow);
-    })
-    
+    });
 }
 
 function updateAmountForRow(row) {
@@ -61,52 +65,47 @@ function updateAmountForRow(row) {
     amountCell.dataset.value = amount;
 }
 
-function calculateAmount(package) {
+function calculateAmount(pkg) {
     const FIRST_TIER_PRICE = 2.0;
     const SECOND_TIER_PRICE = 1.5;
     const THIRD_TIER_PRICE = 1.0;
 
-    let firstTierPackage = Math.min(package, 25);
-    let secondTierPackage = Math.min(Math.max(package - 25, 0), 15);
-    let thirdTierPackage = Math.max((package - 40), 0);
+    let firstTierPackage = Math.min(pkg, 25);
+    let secondTierPackage = Math.min(Math.max(pkg - 25, 0), 15);
+    let thirdTierPackage = Math.max((pkg - 40), 0);
     
     let total = ((firstTierPackage * FIRST_TIER_PRICE) + (secondTierPackage * SECOND_TIER_PRICE) + (thirdTierPackage * THIRD_TIER_PRICE));
     return total;
 }
 
-async function getAllWorkerNames() {
-    const response = await fetch('http://localhost:8080/api/amzTransaction/getAllWorkerNames');
-    return await response.json();
-}
-
-
-document.addEventListener("DOMContentLoaded", getAllRowsFromDB);
-
+document.addEventListener("DOMContentLoaded", () => {
+    getAllRowsFromDB();
+    loadWeeklyTotalsPerPerson();
+    getWeeklyTotal();
+});
 
 async function getAllRowsFromDB() {
-    const response = await fetch('http://localhost:8080/api/amzTransaction/getAllRows');
+    try {
+        const rows = await api.getAllRows();
+        const tbody = document.querySelector("#amzTable tbody");
 
-    if(response === null) return;
+        rows.forEach((row, index) => {
+            const tr = tbody.insertRow();
+            tr.contentEditable = "true";
 
-    const rows = await response.json();
-    const tbody = document.querySelector("#amzTable tbody");
-
-    rows.forEach((row, index) => {
-        const tr = tbody.insertRow();
-        tr.contentEditable = "true";
-
-        tr.insertCell().textContent = index + 1;
-        tr.insertCell().textContent = row.dateOfWork;
-        tr.insertCell().textContent = row.packageNum;
-        tr.insertCell().textContent = row.amount;
-        tr.insertCell().textContent = row.person;
-    });
-
-    console.log(rows);
-
+            tr.insertCell().textContent = index + 1;
+            tr.insertCell().textContent = row.date;
+            tr.insertCell().textContent = row.package;
+            tr.insertCell().textContent = row.amount;
+            tr.insertCell().textContent = row.person;
+        });
+    } catch (error) {
+        console.error("Failed to load Amazon rows from DB:", error);
+    }
 }
 
-function saveProgressAmz() {
+
+async function saveProgressAmz() {
     const table = document.getElementById('amzTable');
     const rows = table.querySelectorAll('tbody tr');
     const data = [];
@@ -115,38 +114,65 @@ function saveProgressAmz() {
         if(row.dataset.saved === "false") {
             const cells = row.querySelectorAll("td");
 
-            package = parseInt(cells[2].textContent);
-            amount = String(cells[3].textContent).slice(1);
+            const pkg = parseInt(cells[2].textContent);
+            const amount = String(cells[3].textContent).slice(1);
 
             data.push({
                 date: cells[1].querySelector("input").value,
                 amount: amount,
-                package: package,
+                package: pkg,
                 person: cells[4].querySelector("select.person").value
             });
         }
     });
 
-    if(data.length > 0) {
-        fetch('http://localhost:8080/api/amzTransaction/saveTable', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
-        })
-        .then(response => {
-            if(!response.ok) {
-                console.log(data);
-                throw new Error('Network response was not ok: ' + response.statusText);
-            }
-            rows.forEach(row => row.dataset.saved = "true");
-            alert("Progress has been saved properly")
-        })
-        .catch(error => {
-            console.error('There was a problem with the fetch operation: ', error);
-        });
-    } else {
+    if(data.length === 0) {
         console.error("Table row is empty");
+        return;
+    }
+
+    try {
+        await api.saveAmzTable(data);
+        rows.forEach(row => row.dataset.saved = "true");
+        alert("Progress has been saved properly");
+    } catch (error) {
+        console.error("There was a problem saving Amazon data:", error);
     }
 }
+
+
+async function loadWeeklyTotalsPerPerson() {
+    try {
+        const rows = await api.getWorkerSummary();
+        const tbody = document.querySelector("#workerSummaryTable tbody");
+
+        rows.forEach(row => {
+            const tr = tbody.insertRow();
+            tr.insertCell().textContent = row.name;
+            tr.insertCell().textContent = row.totalPackages;
+            tr.insertCell().textContent = `$${Number(row.totalEarned).toFixed(2)}`;
+        });
+    } catch (error) {
+        console.error("Failed to load worker summary:", error);
+    }
+}
+
+async function getWeeklyTotal() {
+    try {
+        const rows = await api.getMonthlySummary();
+        const tbody = document.querySelector("#monthlySummaryTable tbody");
+
+        rows.forEach(row => {
+            const tr = tbody.insertRow();
+            tr.insertCell().textContent = row.month;
+            tr.insertCell().textContent = row.totalPackages;
+            tr.insertCell().textContent = `$${Number(row.totalRevenue).toFixed(2)}`;
+        });
+    } catch (error) {
+        console.error("Failed to load monthly summary:", error);
+    }
+}
+
+window.addRowAmz = addRowAmz;
+window.saveProgressAmz = saveProgressAmz;
+

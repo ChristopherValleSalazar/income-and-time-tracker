@@ -5,39 +5,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Programming Hours</title>
     <link rel="stylesheet" href="style.css">
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </head>
 <body>
+
     <header id="header">
-        <h2>Recorded Hours</h2>
+        <a class="logo" href="index.html"> HourTracker</a>
         <nav>
-            <a href="index.html">Home</a>
-            <a href="amz.html">Amazon Payment</a>
+            <a href="index.html" class="nav-active">Home</a>
+            <a href="amz.html">Amazon</a>
+            <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme">
+                <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
         </nav>
     </header>
 
-    <section class="hero">
-        <h1>Programming Hours Recorded 2026</h1>
-    </section>
-    
-    <button class="add-bttn" onclick="addRow()">Add New Row</button>
-    <button class="save-bttn" onclick="saveProgress()">Save Progress</button>
+    <main class="container">
+        <section class="hero">
+            <h1>Programming Hours</h1>
+            <p>Track your coding sessions — 2026</p>
+        </section>
 
-    <table id="table">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Date</th>
-                <th>Time (hh:mm)</th>
-                <th>Description</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+        <section class="table-section">
+            <div class="section-header">
+                <h2>Session Log</h2>
+                <div class="actions">
+                    <button class="btn btn-outline" onclick="addRow()">+ Add Row</button>
+                    <button class="btn btn-primary" onclick="saveProgress()">Save Progress</button>
+                </div>
+            </div>
+            <div class="card">
+                <table id="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Date</th>
+                            <th>Time (hh:mm)</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
 
-    <div id="totalHoursBox">
-        Total Hours: <span id="totalHoursValue">00:00</span>
-    </div>
+        <div class="stat-card">
+            <span class="stat-label">Total Hours</span>
+            <span class="stat-value" id="totalHoursValue">00:00</span>
+        </div>
+    </main>
 
 </body>
 </html>

@@ -1,9 +1,12 @@
+import * as api from "./api.js";
+import "./theme.js";
+
 function addRow() {
     const tableBody = document.getElementById("table").getElementsByTagName('tbody')[0];
 
     let newRow = tableBody.insertRow(-1);
 
-    newRow.dataset.saved = "false"; //set all rows as not saved until their sent into database
+    newRow.dataset.saved = "false";
     
     let cell1 = newRow.insertCell(0);
     let cell2 = newRow.insertCell(1);
@@ -26,7 +29,7 @@ function addRow() {
     cell4.classList.add("editable", "description");
 }
 
-function saveProgress() {
+async function saveProgress() {
     const table = document.getElementById('table');
     const rows = table.querySelectorAll('tbody tr');
     const data = [];
@@ -35,7 +38,7 @@ function saveProgress() {
         if(row.dataset.saved === "false") {
             const cells = row.querySelectorAll("td");
 
-            time = timeToDecimal(cells[2].textContent);
+            const time = timeToDecimal(cells[2].textContent);
 
             data.push({
                 date: cells[1].querySelector("input").value,
@@ -45,28 +48,18 @@ function saveProgress() {
         }
     });
 
-    if(data.length > 0) {
-        fetch('http://localhost:8080/api/table/saveTable', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
-        })
-        .then(response => {
-            if(!response.ok) {
-                throw new Error('Network response was not ok: ' + response.statusText);
-            }
-
-            rows.forEach(row => row.dataset.saved = "true");
-            alert("Progress has been saved properly")
-            console.log("save successful");
-        })
-        .catch(error => {
-            console.error('There was a problem with the fetch operation: ', error);
-        });
-    } else {
+    if(data.length === 0) {
         console.error("No information");
+        return;
+    }
+
+    try {
+        await api.saveTable(data);
+        rows.forEach(row => row.dataset.saved = "true");
+        alert("Progress has been saved properly");
+        console.log("save successful");
+    } catch (error) {
+        console.error("There was a problem saving progress:", error);
     }
 }
 
@@ -80,7 +73,7 @@ function decimalToTime(decimal) {
     const mins = Math.round((decimal - hours) * 60);
 
     const paddedHours = String(hours).padStart(2, "0");
-    const paddedMins = String(mins).padStart(2,"0");
+    const paddedMins = String(mins).padStart(2, "0");
 
     return `${paddedHours}:${paddedMins}`;
 }
@@ -88,37 +81,37 @@ function decimalToTime(decimal) {
 document.addEventListener("DOMContentLoaded", loadTableFromDB);
 
 async function loadTableFromDB() {
-    const response = await fetch('http://localhost:8080/api/table/loadTable');
-    
-    if(response === null) return;
-    
-    const rows = await response.json();
-    const tbody = document.querySelector("#table tbody");
-    
-    rows.forEach((row, index) =>{
-        const tr = tbody.insertRow();
-        tr.contentEditable = "true";
+    try {
+        const rows = await api.loadTable();
+        const tbody = document.querySelector("#table tbody");
 
-        displayTime = decimalToTime(row.hours);
+        rows.forEach((row, index) => {
+            const tr = tbody.insertRow();
+            tr.contentEditable = "true";
 
-        tr.insertCell().textContent = index + 1;
-        tr.insertCell().textContent = row.date;
-        tr.insertCell().textContent = displayTime;
-        tr.insertCell().textContent = row.description;
-    });
+            const displayTime = decimalToTime(row.hours);
 
-    getTotalHours();
-} 
+            tr.insertCell().textContent = index + 1;
+            tr.insertCell().textContent = row.date;
+            tr.insertCell().textContent = displayTime;
+            tr.insertCell().textContent = row.description;
+        });
 
-async function getTotalHours() {
-    const response = await fetch('http://localhost:8080/api/table/getTotalHours');
+        await fetchTotalHours();
+    } catch (error) {
+        console.error("Failed to load table from DB:", error);
+    }
+}
 
-    if(response === null) return;
+async function fetchTotalHours() {
+    try {
+        const total = await api.getTotalHours();
+        const displayTotal = decimalToTime(total);
+        document.getElementById("totalHoursValue").textContent = displayTotal;
+    } catch (error) {
+        console.error("Failed to load total hours:", error);
+    }
+}
 
-    const total = await response.json();
-    const displayTotal = decimalToTime(total);
-
-    document.getElementById("totalHoursValue").textContent = displayTotal;
-    
-} 
-
+window.addRow = addRow;
+window.saveProgress = saveProgress;
