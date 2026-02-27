@@ -24,14 +24,14 @@ public class AmazonTransactionController {
     }
 
     @PostMapping("/saveTable")
-    public ResponseEntity<Void> saveAmzRows(@RequestBody List<Map<String, String>> transactions) {
+    public ResponseEntity<Void> saveAmzRows(@RequestBody List<AmazonTransaction> transactions) {
         service.saveAmzRows(transactions);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/getAllRows")
     public ResponseEntity<List<AmazonTransaction>> loadAllAmzRows() {
-        return new ResponseEntity<>(service.testingObjLoading(), HttpStatus.OK);
+        return new ResponseEntity<>(service.loadAmzRowsNew(), HttpStatus.OK);
     }
 
     @GetMapping("/getAllWorkerNames")

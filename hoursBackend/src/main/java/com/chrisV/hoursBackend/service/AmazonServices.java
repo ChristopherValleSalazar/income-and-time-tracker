@@ -20,44 +20,18 @@ public class AmazonServices {
 
     final
 
-    public void saveAmzRows(List<Map<String, String>> transactions) {
-        System.out.println(transactions.toString());
+    public void saveAmzRows(List<AmazonTransaction> transactions) {
         List<AmazonTransaction> entities = transactions
-                .stream()
-                .map(entity -> {
-                    AmazonTransaction row = new AmazonTransaction();
-                    row.setAmount(new BigDecimal(entity.get("amount")));
-                    row.setDateOfWork(LocalDate.parse(entity.get("date")));
-                    row.setPerson(AmazonNames.valueOf(entity.get("person")));
-                    row.setPackageNum(Byte.valueOf(entity.get("package")));
-                    return row;
-                }).toList();
+                .stream().toList();
         repo.saveAll(entities);
     }
 
-    public List<Map<String, String>> loadAllAmzRows() {
-        return repo.findAll().stream()
-                .sorted(Comparator.comparing(AmazonTransaction::getDateOfWork))
-                .map(entity -> {
-                    Map<String, String> entities = new HashMap<>();
-                    entities.put("dates", String.valueOf(entity.getDateOfWork()));
-                    entities.put("amount", String.valueOf(entity.getAmount()));
-                    entities.put("person", String.valueOf(entity.getPerson()));
-                    entities.put("package", String.valueOf(entity.getPackageNum()));
-                    return entities;
-                }).toList();
-    }
-
-    public List<AmazonTransaction> testingObjLoading() {
-        List<AmazonTransaction> transactions = repo.findAll()
+    //passing a list of objects to the frontend instead of the old method where I send a map<String, String>
+    public List<AmazonTransaction> loadAmzRowsNew() {
+        return repo.findAll()
                         .stream()
                 .sorted(Comparator.comparing(AmazonTransaction::getDateOfWork))
                 .toList();
-
-        System.out.println(transactions);
-
-        return transactions;
-
     }
 
     public AmazonNames[] getAllWorkerName() {
