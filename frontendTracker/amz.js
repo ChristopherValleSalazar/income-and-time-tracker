@@ -94,8 +94,8 @@ async function getAllRowsFromDB() {
             tr.contentEditable = "true";
 
             tr.insertCell().textContent = index + 1;
-            tr.insertCell().textContent = row.date;
-            tr.insertCell().textContent = row.package;
+            tr.insertCell().textContent = row.dateOfWork;
+            tr.insertCell().textContent = row.packageNum;
             tr.insertCell().textContent = row.amount;
             tr.insertCell().textContent = row.person;
         });
@@ -165,9 +165,9 @@ async function loadWeeklyTotal() {
 
         rows.forEach(row => {
             const tr = tbody.insertRow();
-            tr.insertCell().textContent = row["Range Of Dates"];
-            tr.insertCell().textContent = row["Total Packages"];
-            tr.insertCell().textContent = row["Total Amount"];
+            tr.insertCell().textContent = row.weekRange;
+            tr.insertCell().textContent = row.totalPackages;
+            tr.insertCell().textContent = row.totalAmount;
         });
     } catch (error) {
         console.error("Failed to load monthly summary:", error);

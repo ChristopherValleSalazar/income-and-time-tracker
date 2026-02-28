@@ -1,4 +1,4 @@
-const BASE_URL = "http://192.168.68.63:8080";
+const BASE_URL = "http://localhost:8080"; //testing url
 
 async function request(endpoint, options = {}) {
     const url = `${BASE_URL}${endpoint}`;
