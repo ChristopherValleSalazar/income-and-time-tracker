@@ -89,9 +89,9 @@ public class AmazonServices {
 
         for(int i = 0; i < totalWeeklyAmounts.size(); i++) {
             Map<String,String> weeklyReport = new LinkedHashMap<>();
-            weeklyReport.put("Range Of Dates", totalWeeklyDates.get(i));
-            weeklyReport.put("Total Packages", totalWeeklyPackages.get(i));
-            weeklyReport.put("Total Amount", totalWeeklyAmounts.get(i));
+            weeklyReport.put("weekRange", totalWeeklyDates.get(i));
+            weeklyReport.put("totalPackages", totalWeeklyPackages.get(i));
+            weeklyReport.put("totalAmount", totalWeeklyAmounts.get(i));
             completeWeeklyReport.add(weeklyReport);
         }
         return completeWeeklyReport;
