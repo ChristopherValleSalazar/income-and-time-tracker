@@ -10,7 +10,7 @@ import java.time.LocalDate;
 @Entity
 @Data
 @NoArgsConstructor
-@Table(name = "programming_hours_rows")
+@Table(name = "programming_hours")
 public class ProgrammingHours {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

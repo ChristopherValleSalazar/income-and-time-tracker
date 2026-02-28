@@ -13,6 +13,4 @@ public interface AmazonTransactionRepo extends JpaRepository<AmazonTransaction, 
 
     @Query("SELECT DISTINCT person FROM AmazonTransaction")
     List<AmazonNames> findAmazonTransactionNames();
-
-
 }

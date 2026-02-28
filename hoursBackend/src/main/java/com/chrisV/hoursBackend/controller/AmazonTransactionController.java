@@ -43,6 +43,11 @@ public class AmazonTransactionController {
     public ResponseEntity<List<Map<String, String>>> loadTotalPerWeek() {
         return new ResponseEntity<>(service.loadWeeklyTotal(), HttpStatus.OK);
     }
+
+    @GetMapping("/getWeeklyTotalsPerPerson")
+    public ResponseEntity<List<Map<String, String>>> loadWeeklyTotalPerPerson() {
+        return new ResponseEntity<>(service.loadWeeklyTotalPerPerson(), HttpStatus.OK);
+    }
         /*
         using this list will allow me to generate a total per person, I will make individual methods afterward
         essentially this logic will be done in 2 methods, one for complete total and the other one will be for
@@ -54,10 +59,6 @@ public class AmazonTransactionController {
         //then I need to filter and passed that into the converter to String list
         //So separating concerns for these conversions.
 
-    @GetMapping("/getWeeklyTotalsPerPerson")
-    public ResponseEntity<List<Map<String, String>>> loadWeeklyTotalPerPerson() {
-        return new ResponseEntity<>(service.loadWeeklyTotalPerPerson(), HttpStatus.OK);
-    }
 }
 
 
