@@ -1,5 +1,6 @@
 package com.chrisV.hoursBackend.service;
 
+import com.chrisV.hoursBackend.dto.WeeklyReportGeneral;
 import com.chrisV.hoursBackend.model.AmazonNames;
 import com.chrisV.hoursBackend.model.AmazonTransaction;
 import com.chrisV.hoursBackend.repo.AmazonTransactionRepo;
@@ -18,12 +19,9 @@ public class AmazonServices {
     @Autowired
     AmazonTransactionRepo repo;
 
-    final
-
+    //Need validations, maybe learn again how to use @valid for a dto of these or just verified manually
     public void saveAmzRows(List<AmazonTransaction> transactions) {
-        List<AmazonTransaction> entities = transactions
-                .stream().toList();
-        repo.saveAll(entities);
+        repo.saveAll(transactions);
     }
 
     //passing a list of objects to the frontend instead of the old method where I send a map<String, String>
@@ -38,9 +36,14 @@ public class AmazonServices {
         return AmazonNames.values();
     }
 
-    public List<Map<String, String>> loadWeeklyTotal() {
-        List<AmazonTransaction> transactions =  repo.findAll();
-        return generateTotalsForAllWeeks(transactions);
+//    public List<Map<String, String>> loadWeeklyTotal() {
+//        List<AmazonTransaction> transactions =  repo.findAll();
+//        return generateTotalsForAllWeeks(transactions);
+//   }
+
+   public List<WeeklyReportGeneral> loadWeeklyTotalTesting() {
+        List<AmazonTransaction> transactions = repo.findAll();
+        return generateTotalsForAllWeeksTesting(transactions);
    }
 
     public List<Map<String, String>> loadWeeklyTotalPerPerson() {
@@ -48,14 +51,41 @@ public class AmazonServices {
         return generateWeeklyTotalsPerPerson(transaction);
     }
 
-    private List<Map<String, String>> generateTotalsForAllWeeks(List<AmazonTransaction> transactions) {
-
+    private List<WeeklyReportGeneral> generateTotalsForAllWeeksTesting(List<AmazonTransaction> transactions) {
         Map<LocalDate, List<AmazonTransaction>> weeklyDateRange = generateFullWeekDateRange(transactions);
 
-        List<String> totalWeeklyPackages = generateTotalWeeklyPackages(weeklyDateRange);
-        List<String> totalWeeklyAmounts = generateTotalWeeklyAmounts(weeklyDateRange);
-        return createCompleteWeekReport(weeklyDateRange, totalWeeklyAmounts, totalWeeklyPackages);
+        List<Integer> totalWeeklyPackages = generateTotalWeeklyPackages(weeklyDateRange);
+        List<BigDecimal> totalWeeklyAmounts = generateTotalWeeklyAmounts(weeklyDateRange);
+
+        return mapDataToDTO(weeklyDateRange, totalWeeklyAmounts, totalWeeklyPackages);
     }
+
+    private List<WeeklyReportGeneral> mapDataToDTO(Map<LocalDate, List<AmazonTransaction>> weeklyDateRange,
+                                                   List<BigDecimal> totalWeeklyAmounts,
+                                                   List<Integer> totalWeeklyPackages) {
+
+        List<String> totalWeeklyDates = convertWeeklyDateRangeIntoString(weeklyDateRange);
+        List<WeeklyReportGeneral> weeklyReportGeneral = new ArrayList<>();
+
+        for(int i = 0; i < totalWeeklyAmounts.size(); i++) {
+            WeeklyReportGeneral report = new WeeklyReportGeneral();
+            report.setWeekRange(totalWeeklyDates.get(i));
+            report.setWeeklyPackageNum(totalWeeklyPackages.get(i));
+            report.setWeeklyAmount(totalWeeklyAmounts.get(i));
+            weeklyReportGeneral.add(report);
+        }
+        return weeklyReportGeneral;
+    }
+
+
+//    private List<Map<String, String>> generateTotalsForAllWeeks(List<AmazonTransaction> transactions) {
+//
+//        Map<LocalDate, List<AmazonTransaction>> weeklyDateRange = generateFullWeekDateRange(transactions);
+//
+//        List<String> totalWeeklyPackages = generateTotalWeeklyPackages(weeklyDateRange);
+//        List<String> totalWeeklyAmounts = generateTotalWeeklyAmounts(weeklyDateRange);
+//        return createCompleteWeekReport(weeklyDateRange, totalWeeklyAmounts, totalWeeklyPackages);
+//    }
 
     private Map<LocalDate, List<AmazonTransaction>> generateFullWeekDateRange(List<AmazonTransaction> transactions) {
         Map<LocalDate, List<AmazonTransaction>> grouped = transactions.stream()
@@ -78,11 +108,13 @@ public class AmazonServices {
                         (a, b) -> a,
                         TreeMap::new
                 ));
-
         return grouped;
     }
 
-    private List<Map<String, String>> createCompleteWeekReport(Map<LocalDate, List<AmazonTransaction>> weeklyDateRange, List<String> totalWeeklyAmounts, List<String> totalWeeklyPackages) {
+    private List<Map<String, String>> createCompleteWeekReport(Map<LocalDate, List<AmazonTransaction>> weeklyDateRange,
+                                                               List<String> totalWeeklyAmounts,
+                                                               List<String> totalWeeklyPackages) {
+
         List<String> totalWeeklyDates = convertWeeklyDateRangeIntoString(weeklyDateRange);
 
         List<Map<String, String>> completeWeeklyReport = new ArrayList<>();
@@ -105,25 +137,23 @@ public class AmazonServices {
                 }).toList();
     }
 
-    private List<String> generateTotalWeeklyPackages(Map<LocalDate, List<AmazonTransaction>> weeklyDateRange) {
+    private List<Integer> generateTotalWeeklyPackages(Map<LocalDate, List<AmazonTransaction>> weeklyDateRange) {
         return weeklyDateRange.values().stream()
                 .map(weekTransactions -> {
-
                     int totalPackages = weekTransactions.stream()
                             .mapToInt(AmazonTransaction::getPackageNum)
                             .sum();
-                    return String.valueOf(totalPackages);
+                    return totalPackages;
                 }).toList();
     }
 
-    private List<String> generateTotalWeeklyAmounts(Map<LocalDate, List<AmazonTransaction>> weeklyDateRange) {
+    private List<BigDecimal> generateTotalWeeklyAmounts(Map<LocalDate, List<AmazonTransaction>> weeklyDateRange) {
         return weeklyDateRange.values().stream()
                 .map(weekTransactions -> {
-
                     BigDecimal totalAmounts = weekTransactions.stream()
                             .map(AmazonTransaction::getAmount)
                             .reduce(BigDecimal.ZERO, BigDecimal::add);
-                    return String.valueOf(totalAmounts);
+                    return totalAmounts;
                 }).toList();
     }
 

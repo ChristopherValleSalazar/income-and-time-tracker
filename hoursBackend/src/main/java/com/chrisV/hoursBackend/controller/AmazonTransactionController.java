@@ -1,5 +1,6 @@
 package com.chrisV.hoursBackend.controller;
 
+import com.chrisV.hoursBackend.dto.WeeklyReportGeneral;
 import com.chrisV.hoursBackend.model.AmazonNames;
 import com.chrisV.hoursBackend.model.AmazonTransaction;
 import com.chrisV.hoursBackend.service.AmazonServices;
@@ -40,8 +41,8 @@ public class AmazonTransactionController {
     }
 
     @GetMapping("/getAllTotalPerWeek")
-    public ResponseEntity<List<Map<String, String>>> loadTotalPerWeek() {
-        return new ResponseEntity<>(service.loadWeeklyTotal(), HttpStatus.OK);
+    public ResponseEntity<List<WeeklyReportGeneral>> loadTotalPerWeek() {
+        return new ResponseEntity<>(service.loadWeeklyTotalTesting(), HttpStatus.OK);
     }
 
     @GetMapping("/getWeeklyTotalsPerPerson")
