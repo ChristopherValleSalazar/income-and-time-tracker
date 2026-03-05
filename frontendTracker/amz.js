@@ -117,11 +117,13 @@ async function saveProgressAmz() {
             const pkg = parseInt(cells[2].textContent);
             const amount = String(cells[3].textContent).slice(1);
 
+            console.log(data);
+
             data.push({
-                date: cells[1].querySelector("input").value,
+                dateOfWork: cells[1].querySelector("input").value,
                 amount: amount,
-                package: pkg,
-                person: cells[4].querySelector("select.person").value
+                packageNum: pkg,
+                person: cells[4].querySelector("select.person").value,
             });
         }
     });
@@ -148,10 +150,10 @@ async function loadWeeklyTotalsPerPerson() {
 
         rows.forEach(row => {
             const tr = tbody.insertRow();
-            tr.insertCell().textContent = row.WeekRange;
-            tr.insertCell().textContent = row.Person;
-            tr.insertCell().textContent = row.TotalPackages;
-            tr.insertCell().textContent = row.TotalAmount;
+            tr.insertCell().textContent = row.weekRange;
+            tr.insertCell().textContent = row.worker;
+            tr.insertCell().textContent = row.weeklyPackageNumPerPerson;
+            tr.insertCell().textContent = row.weeklyAmountPerPerson;
         });
     } catch (error) {
         console.error("Failed to load worker summary:", error);
@@ -166,8 +168,8 @@ async function loadWeeklyTotal() {
         rows.forEach(row => {
             const tr = tbody.insertRow();
             tr.insertCell().textContent = row.weekRange;
-            tr.insertCell().textContent = row.totalPackages;
-            tr.insertCell().textContent = row.totalAmount;
+            tr.insertCell().textContent = row.weeklyPackageNum;
+            tr.insertCell().textContent = row.weeklyAmount;
         });
     } catch (error) {
         console.error("Failed to load monthly summary:", error);
