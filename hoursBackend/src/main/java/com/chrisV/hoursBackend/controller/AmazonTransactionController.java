@@ -1,6 +1,7 @@
 package com.chrisV.hoursBackend.controller;
 
 import com.chrisV.hoursBackend.dto.WeeklyReportGeneral;
+import com.chrisV.hoursBackend.dto.WeeklyReportPerPerson;
 import com.chrisV.hoursBackend.model.AmazonNames;
 import com.chrisV.hoursBackend.model.AmazonTransaction;
 import com.chrisV.hoursBackend.service.AmazonServices;
@@ -46,7 +47,7 @@ public class AmazonTransactionController {
     }
 
     @GetMapping("/getWeeklyTotalsPerPerson")
-    public ResponseEntity<List<Map<String, String>>> loadWeeklyTotalPerPerson() {
+    public ResponseEntity<List<WeeklyReportPerPerson>> loadWeeklyTotalPerPerson() {
         return new ResponseEntity<>(service.loadWeeklyTotalPerPerson(), HttpStatus.OK);
     }
         /*
