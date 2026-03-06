@@ -19,15 +19,10 @@ public class ProgrammingHoursService {
     }
 
     public BigDecimal getTotalHours() {
-        List<ProgrammingHours> hours = repo.findAll();
-
-        BigDecimal total = hours.stream()
-                .map(ProgrammingHours::getHours)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        return total;
+        return repo.getTotalHours();
     }
 
+    //TODO: this returns wrong unsorted data
     public List<ProgrammingHours> loadProgrammingHours() {
         return repo.findAll();
     }

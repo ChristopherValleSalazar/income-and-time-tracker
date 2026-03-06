@@ -15,10 +15,10 @@ import java.time.LocalDate;
 public class AmazonTransaction {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NonNull
+    @Column(nullable = false)
     private LocalDate dateOfWork;
 
     @Column(nullable = false, precision = 15, scale = 2)
@@ -27,5 +27,5 @@ public class AmazonTransaction {
     private Byte packageNum;
 
     @Enumerated(EnumType.STRING)
-    AmazonNames person;
+    private AmazonNames person;
 }

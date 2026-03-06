@@ -50,17 +50,6 @@ public class AmazonTransactionController {
     public ResponseEntity<List<WeeklyReportPerPerson>> loadWeeklyTotalPerPerson() {
         return new ResponseEntity<>(service.loadWeeklyTotalPerPerson(), HttpStatus.OK);
     }
-        /*
-        using this list will allow me to generate a total per person, I will make individual methods afterward
-        essentially this logic will be done in 2 methods, one for complete total and the other one will be for
-        filter out totals per person
-         */
-
-        //need to filter this string response for packages then use same logic for the rest of them
-        //instead of getting the string version of the list I need to filter out the original obj
-        //then I need to filter and passed that into the converter to String list
-        //So separating concerns for these conversions.
-
 }
 
 

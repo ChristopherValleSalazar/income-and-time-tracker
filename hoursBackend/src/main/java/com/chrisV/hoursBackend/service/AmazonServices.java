@@ -142,7 +142,7 @@ public class AmazonServices {
                 WeeklyReportPerPerson dto = new WeeklyReportPerPerson();
 
                 dto.setWorker(person);
-                dto.setWeekRange(weekStart + " " + weekEnd);
+                dto.setWeekRange(weekStart + " - " + weekEnd);
                 dto.setWeeklyPackageNumPerPerson(totalPackages);
                 dto.setWeeklyAmountPerPerson(totalAmount);
 

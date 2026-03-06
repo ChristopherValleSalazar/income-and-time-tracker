@@ -1,6 +1,6 @@
 package com.chrisV.hoursBackend.dto;
 
-public record programmingHoursDTO(
+public record ProgrammingHoursDTO(
         String Data,
         String hours,
         String description
