@@ -43,7 +43,7 @@ public class AmazonTransactionController {
 
     @GetMapping("/getAllTotalPerWeek")
     public ResponseEntity<List<WeeklyReportGeneral>> loadTotalPerWeek() {
-        return new ResponseEntity<>(service.loadWeeklyTotalTesting(), HttpStatus.OK);
+        return new ResponseEntity<>(service.loadWeeklyTotal(), HttpStatus.OK);
     }
 
     @GetMapping("/getWeeklyTotalsPerPerson")

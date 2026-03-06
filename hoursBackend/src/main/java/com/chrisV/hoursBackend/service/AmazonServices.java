@@ -37,9 +37,10 @@ public class AmazonServices {
         return AmazonNames.values();
     }
 
-   public List<WeeklyReportGeneral> loadWeeklyTotalTesting() {
+   public List<WeeklyReportGeneral> loadWeeklyTotal() {
         List<AmazonTransaction> transactions = repo.findAll();
-        return generateTotalsForAllWeeks(transactions);
+        Map<LocalDate, List<AmazonTransaction>> weeklyMap = getFullWeeks(transactions);
+        return convertWeeksToDto(weeklyMap);
    }
 
     public List<WeeklyReportPerPerson> loadWeeklyTotalPerPerson() {
@@ -47,77 +48,48 @@ public class AmazonServices {
         return generateWeeklyTotalsPerPerson(transaction);
     }
 
-    private List<WeeklyReportGeneral> generateTotalsForAllWeeks(List<AmazonTransaction> transactions) {
-        Map<LocalDate, List<AmazonTransaction>> weeklyDateRange = generateFullWeekDateRange(transactions);
-        List<Integer> totalWeeklyPackages = generateTotalWeeklyPackages(weeklyDateRange);
-        List<BigDecimal> totalWeeklyAmounts = generateTotalWeeklyAmounts(weeklyDateRange);
-
-        return mapDataToDTO(weeklyDateRange, totalWeeklyAmounts, totalWeeklyPackages);
-    }
-
-    private List<WeeklyReportGeneral> mapDataToDTO(Map<LocalDate, List<AmazonTransaction>> weeklyDateRange,
-                                                   List<BigDecimal> totalWeeklyAmounts,
-                                                   List<Integer> totalWeeklyPackages) {
-
-        List<String> totalWeeklyDates = convertWeeklyDateRangeIntoString(weeklyDateRange);
-        List<WeeklyReportGeneral> weeklyReportGeneral = new ArrayList<>();
-
-        for(int i = 0; i < totalWeeklyAmounts.size(); i++) {
-            WeeklyReportGeneral report = new WeeklyReportGeneral();
-            report.setWeekRange(totalWeeklyDates.get(i));
-            report.setWeeklyPackageNum(totalWeeklyPackages.get(i));
-            report.setWeeklyAmount(totalWeeklyAmounts.get(i));
-            weeklyReportGeneral.add(report);
-        }
-        return weeklyReportGeneral;
-    }
-
-    private Map<LocalDate, List<AmazonTransaction>> generateFullWeekDateRange(List<AmazonTransaction> transactions) {
-        Map<LocalDate, List<AmazonTransaction>> grouped = transactions.stream()
+    private Map<LocalDate, List<AmazonTransaction>> getFullWeeks(List<AmazonTransaction> transactions) {
+        //group by week with starting day MONDAY
+        Map<LocalDate, List<AmazonTransaction>> weeklyMap = transactions.stream()
                 .sorted(Comparator.comparing(AmazonTransaction::getDateOfWork))
                 .collect(Collectors.groupingBy(
                         t -> t.getDateOfWork().with(DayOfWeek.MONDAY),
                         Collectors.toList()
-                ))
+                ));
 
-                .entrySet()
-                .stream()
-                .filter(entry -> entry.getValue().size() == 6) // 6 representing the quantity of days per week
-
+        return weeklyMap.entrySet().stream()
+                .filter(entry -> entry.getValue().size() == 6)
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
                                 .sorted(Comparator.comparing(AmazonTransaction::getDateOfWork))
                                 .toList()
                 ));
-        return grouped;
+
     }
 
-    private List<String> convertWeeklyDateRangeIntoString(Map<LocalDate, List<AmazonTransaction>> weeklyDateRange) {
-        return weeklyDateRange.keySet().stream()
-                .map(weekStart -> {
+    private List<WeeklyReportGeneral> convertWeeksToDto(Map<LocalDate, List<AmazonTransaction>> weeklyMap) {
+        return weeklyMap.entrySet().stream()
+                .map(entry -> {
+                    LocalDate weekStart = entry.getKey();
                     LocalDate weekEnd = weekStart.plusDays(5);
-                    return weekStart + " - " + weekEnd;
-                }).toList();
-    }
 
-    private List<Integer> generateTotalWeeklyPackages(Map<LocalDate, List<AmazonTransaction>> weeklyDateRange) {
-        return weeklyDateRange.values().stream()
-                .map(weekTransactions -> {
+                    List<AmazonTransaction> weekTransactions = entry.getValue();
+
                     int totalPackages = weekTransactions.stream()
                             .mapToInt(AmazonTransaction::getPackageNum)
                             .sum();
-                    return totalPackages;
-                }).toList();
-    }
 
-    private List<BigDecimal> generateTotalWeeklyAmounts(Map<LocalDate, List<AmazonTransaction>> weeklyDateRange) {
-        return weeklyDateRange.values().stream()
-                .map(weekTransactions -> {
-                    BigDecimal totalAmounts = weekTransactions.stream()
+                    BigDecimal totalAmount = weekTransactions.stream()
                             .map(AmazonTransaction::getAmount)
                             .reduce(BigDecimal.ZERO, BigDecimal::add);
-                    return totalAmounts;
+
+                    WeeklyReportGeneral report = new WeeklyReportGeneral();
+                    report.setWeekRange(weekStart + " - " + weekEnd);
+                    report.setWeeklyPackageNum(totalPackages);
+                    report.setWeeklyAmount(totalAmount);
+
+                    return report;
                 }).toList();
     }
 
