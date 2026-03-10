@@ -51,7 +51,6 @@ public class AmazonServices {
     private Map<LocalDate, List<AmazonTransaction>> getFullWeeks(List<AmazonTransaction> transactions) {
         //group by week with starting day MONDAY
         Map<LocalDate, List<AmazonTransaction>> weeklyMap = transactions.stream()
-                .sorted(Comparator.comparing(AmazonTransaction::getDateOfWork))
                 .collect(Collectors.groupingBy(
                         t -> t.getDateOfWork().with(DayOfWeek.MONDAY),
                         Collectors.toList()
@@ -63,7 +62,9 @@ public class AmazonServices {
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
                                 .sorted(Comparator.comparing(AmazonTransaction::getDateOfWork))
-                                .toList()
+                                .toList(),
+                        (a, b) -> a,
+                        TreeMap::new
                 ));
 
     }
@@ -98,6 +99,7 @@ public class AmazonServices {
                 .sorted(Comparator.comparing(AmazonTransaction::getDateOfWork))
                 .collect(Collectors.groupingBy(
                         t -> t.getDateOfWork().with(DayOfWeek.MONDAY),
+                        TreeMap::new,
                         Collectors.toList()
                 ));
 
@@ -106,6 +108,7 @@ public class AmazonServices {
 
     private Map<AmazonNames, List<AmazonTransaction>> mapTransactionsByPerson(List<AmazonTransaction> transactions) {
         return transactions.stream()
+                .sorted(Comparator.comparing(AmazonTransaction::getDateOfWork))
                 .collect(Collectors.groupingBy(
                         AmazonTransaction::getPerson,
                         Collectors.toList()
@@ -117,7 +120,9 @@ public class AmazonServices {
                 .stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        entry -> generateAnyWeekDateRange(entry.getValue())
+                        entry -> generateAnyWeekDateRange(entry.getValue()),
+                        (a, b) -> a,
+                        TreeMap::new
                 ));
     }
 
@@ -145,7 +150,6 @@ public class AmazonServices {
                 dto.setWeekRange(weekStart + " - " + weekEnd);
                 dto.setWeeklyPackageNumPerPerson(totalPackages);
                 dto.setWeeklyAmountPerPerson(totalAmount);
-
                 completeWeeklyReportPerPerson.add(dto);
             });
         });
