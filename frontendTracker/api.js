@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:8080"; //testing url
+const BASE_URL = "http://raspberrypi:8080"; //testing url
 
 async function request(endpoint, options = {}) {
     const url = `${BASE_URL}${endpoint}`;
