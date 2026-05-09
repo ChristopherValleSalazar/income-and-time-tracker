@@ -5,6 +5,11 @@ import com.chrisV.hoursBackend.dto.WeeklyReportPerPerson;
 import com.chrisV.hoursBackend.model.AmazonNames;
 import com.chrisV.hoursBackend.model.AmazonTransaction;
 import com.chrisV.hoursBackend.repo.AmazonTransactionRepo;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,27 +31,40 @@ public class AmazonServices {
     }
 
     //passing a list of objects to the frontend instead of the old method where I send a map<String, String>
-    public List<AmazonTransaction> loadAmzRowsNew() {
-        return repo.findAll()
-                        .stream()
-                .sorted(Comparator.comparing(AmazonTransaction::getDateOfWork))
-                .toList();
+        public Page<AmazonTransaction> loadAmzRowsNew(int page, int size) {
+                Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "dateOfWork"));
+                return repo.findAll(pageable);
     }
 
     public AmazonNames[] getAllWorkerName() {
         return AmazonNames.values();
     }
 
-   public List<WeeklyReportGeneral> loadWeeklyTotal() {
+   public Page<WeeklyReportGeneral> loadWeeklyTotal(int page, int size) {
         List<AmazonTransaction> transactions = repo.findAll();
         Map<LocalDate, List<AmazonTransaction>> weeklyMap = getFullWeeks(transactions);
-        return convertWeeksToDto(weeklyMap);
+                List<WeeklyReportGeneral> report = convertWeeksToDto(weeklyMap);
+                return paginateList(report, page, size);
    }
 
-    public List<WeeklyReportPerPerson> loadWeeklyTotalPerPerson() {
+        public Page<WeeklyReportPerPerson> loadWeeklyTotalPerPerson(int page, int size) {
         List<AmazonTransaction> transaction = repo.findAll();
-        return generateWeeklyTotalsPerPerson(transaction);
+                List<WeeklyReportPerPerson> report = generateWeeklyTotalsPerPerson(transaction);
+                return paginateList(report, page, size);
     }
+
+        private <T> Page<T> paginateList(List<T> source, int page, int size) {
+                Pageable pageable = PageRequest.of(page, size);
+                int start = (int) pageable.getOffset();
+
+                if (start >= source.size()) {
+                        return new PageImpl<>(List.of(), pageable, source.size());
+                }
+
+                int end = Math.min(start + pageable.getPageSize(), source.size());
+                List<T> pageContent = source.subList(start, end);
+                return new PageImpl<>(pageContent, pageable, source.size());
+        }
 
     private Map<LocalDate, List<AmazonTransaction>> getFullWeeks(List<AmazonTransaction> transactions) {
         //group by week with starting day MONDAY

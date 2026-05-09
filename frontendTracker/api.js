@@ -47,18 +47,26 @@ export async function getAllWorkerNames() {
     return getJSON("/api/amzTransaction/getAllWorkerNames");
 }
 
-export async function getAllRows() {
-    return getJSON("/api/amzTransaction/getAllRows");
+export async function getAllRows(page = 0, size = 10) {
+    return getJSON(`/api/amzTransaction/getAllRows?page=${page}&size=${size}`);
 }
 
 export async function saveAmzTable(data) {
     return postJSON("/api/amzTransaction/saveTable", data);
 }
 
-export async function getWorkerSummary() {
-    return getJSON("/api/amzTransaction/getWeeklyTotalsPerPerson");
+export async function getWorkerSummary(page = 0, size = 10) {
+    return getJSON(`/api/amzTransaction/getWeeklyTotalsPerPerson?page=${page}&size=${size}`);
 }
 
-export async function getMonthlySummary() {
-    return getJSON("/api/amzTransaction/getAllTotalPerWeek");
+export async function getMonthlySummary(page = 0, size = 10) {
+    return getJSON(`/api/amzTransaction/getAllTotalPerWeek?page=${page}&size=${size}`);
+}
+
+export async function deleteAmzRowById(id) {
+    return request("url", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+    });
 }

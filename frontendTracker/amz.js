@@ -1,6 +1,128 @@
 import * as api from "./api.js";
 import "./theme.js";
 
+const PAGE_SIZE = 10;
+const paginationState = {
+    amzTable: { currentPage: 0, pageSize: PAGE_SIZE, totalPages: 1 },
+    workerSummaryTable: { currentPage: 0, pageSize: PAGE_SIZE, totalPages: 1 },
+    weeklySummaryTable: { currentPage: 0, pageSize: PAGE_SIZE, totalPages: 1 },
+};
+
+const cachedRows = {
+    amzTable: [],
+    workerSummaryTable: [],
+    weeklySummaryTable: [],
+};
+
+function syncPaginationState(tableId, pagePayload) {
+    const state = paginationState[tableId];
+    state.currentPage = pagePayload.number;
+    state.pageSize = pagePayload.size;
+    state.totalPages = Math.max(1, pagePayload.totalPages || 1);
+}
+
+function buildPageButton({ label, className, disabled = false, active = false, onClick }) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = label;
+    button.className = className;
+    button.disabled = disabled;
+
+    if (active) {
+        button.classList.add("active");
+        button.setAttribute("aria-current", "page");
+    }
+
+    if (onClick) {
+        button.addEventListener("click", onClick);
+    }
+
+    return button;
+}
+
+function getVisiblePageNumbers(totalPages, currentPage) {
+    const maxButtons = 5;
+    const currentDisplayPage = currentPage + 1;
+
+    if (totalPages <= maxButtons) {
+        return Array.from({ length: totalPages }, (_, i) => i);
+    }
+
+    let startDisplay = Math.max(1, currentDisplayPage - 2);
+    let endDisplay = Math.min(totalPages, startDisplay + maxButtons - 1);
+
+    if ((endDisplay - startDisplay + 1) < maxButtons) {
+        startDisplay = Math.max(1, endDisplay - maxButtons + 1);
+    }
+
+    return Array.from({ length: endDisplay - startDisplay + 1 }, (_, i) => (startDisplay - 1) + i);
+}
+
+function renderPaginationControls(tableId, onPageChange) {
+    const container = document.querySelector(`.pagination-bubble[data-table="${tableId}"]`);
+    if (!container) {
+        return;
+    }
+
+    const state = paginationState[tableId];
+    container.replaceChildren();
+
+    const prevButton = buildPageButton({
+        label: "Prev",
+        className: "page-bubble page-nav",
+        disabled: state.currentPage === 0,
+        onClick: () => {
+            onPageChange(state.currentPage - 1);
+        },
+    });
+
+    container.appendChild(prevButton);
+
+    const pageNumbers = getVisiblePageNumbers(state.totalPages, state.currentPage);
+    pageNumbers.forEach(pageNumber => {
+        const pageButton = buildPageButton({
+            label: String(pageNumber + 1),
+            className: "page-bubble page-number",
+            disabled: pageNumber === state.currentPage,
+            active: pageNumber === state.currentPage,
+            onClick: () => {
+                onPageChange(pageNumber);
+            },
+        });
+
+        container.appendChild(pageButton);
+    });
+
+    const nextButton = buildPageButton({
+        label: "Next",
+        className: "page-bubble page-nav",
+        disabled: state.currentPage >= state.totalPages - 1,
+        onClick: () => {
+            onPageChange(state.currentPage + 1);
+        },
+    });
+
+    container.appendChild(nextButton);
+}
+
+async function deleteAmzRow(tr, tbody) {
+    const rowId = tr.dataset.rowId;
+
+    if (!rowId) {
+        tbody.removeChild(tr);
+        window.location.reload();
+        return;
+    }
+
+    try {
+        await api.deleteAmzRowById(Number(rowId));
+        tbody.removeChild(tr);
+        window.location.reload();
+    } catch (error) {
+        console.error("Failed to delete row:", error);
+    }
+}
+
 function addRowAmz() {
     const tableBody = document.getElementById("amzTable").getElementsByTagName('tbody')[0];
 
@@ -13,6 +135,7 @@ function addRowAmz() {
     let cell3 = newRow.insertCell(2);
     let cell4 = newRow.insertCell(3);
     let cell5 = newRow.insertCell(4);
+    let cell6 = newRow.insertCell(5);
 
     let indexCell = tableBody.rows.length;
     cell1.textContent = indexCell;
@@ -32,6 +155,19 @@ function addRowAmz() {
     cell5.contentEditable = "false";
     cell5.dataset.placeholder = "Who worked?";
     cell5.classList.add("editable", "person");
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.textContent = "Delete";
+    deleteBtn.classList.add("delete");
+    deleteBtn.addEventListener("click", async () => {
+        await deleteAmzRow(newRow, tableBody);
+        updateAmountForRow(newRow);
+    });
+    cell6.contentEditable = "false";
+    cell6.appendChild(deleteBtn);
+        
+    
 
     const personSelect = document.createElement("select");
     personSelect.classList.add("person");
@@ -84,21 +220,75 @@ document.addEventListener("DOMContentLoaded", () => {
     loadWeeklyTotal();
 });
 
-async function getAllRowsFromDB() {
-    try {
-        const rows = await api.getAllRows();
-        const tbody = document.querySelector("#amzTable tbody");
+function renderTransactionRowsPage() {
+    const allRows = cachedRows.amzTable;
+    const tbody = document.querySelector("#amzTable tbody");
 
-        rows.forEach((row, index) => {
-            const tr = tbody.insertRow();
-            tr.contentEditable = "true";
+    tbody.innerHTML = "";
 
-            tr.insertCell().textContent = index + 1;
-            tr.insertCell().textContent = row.dateOfWork;
-            tr.insertCell().textContent = row.packageNum;
-            tr.insertCell().textContent = row.amount;
-            tr.insertCell().textContent = row.person;
+    allRows.forEach((row, index) => {
+        const tr = tbody.insertRow();
+        tr.contentEditable = "false";
+        tr.dataset.rowId = row.id;
+
+        const globalRowIndex = (paginationState.amzTable.currentPage * paginationState.amzTable.pageSize) + index + 1;
+        tr.insertCell().textContent = globalRowIndex;
+        tr.insertCell().textContent = row.dateOfWork;
+        tr.insertCell().textContent = row.packageNum;
+        tr.insertCell().textContent = row.amount;
+        tr.insertCell().textContent = row.person;
+
+        const deleteCell = tr.insertCell();
+        deleteCell.contentEditable = "false";
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.type = "button";
+        deleteBtn.textContent = "Delete";
+        deleteBtn.classList.add("delete");
+        deleteBtn.addEventListener("click", async () => {
+            await deleteAmzRow(tr, tbody);
         });
+
+        deleteCell.appendChild(deleteBtn);
+    });
+}
+
+function renderWorkerSummaryPage() {
+    const allRows = cachedRows.workerSummaryTable;
+    const tbody = document.querySelector("#workerSummaryTable tbody");
+
+    tbody.innerHTML = "";
+
+    allRows.forEach(row => {
+        const tr = tbody.insertRow();
+        tr.insertCell().textContent = row.weekRange;
+        tr.insertCell().textContent = row.worker;
+        tr.insertCell().textContent = row.weeklyPackageNumPerPerson;
+        tr.insertCell().textContent = row.weeklyAmountPerPerson;
+    });
+}
+
+function renderWeeklySummaryPage() {
+    const allRows = cachedRows.weeklySummaryTable;
+    const tbody = document.querySelector("#weeklySummaryTable tbody");
+
+    tbody.innerHTML = "";
+
+    allRows.forEach(row => {
+        const tr = tbody.insertRow();
+        tr.insertCell().textContent = row.weekRange;
+        tr.insertCell().textContent = row.weeklyPackageNum;
+        tr.insertCell().textContent = row.weeklyAmount;
+    });
+}
+
+async function getAllRowsFromDB(page = paginationState.amzTable.currentPage) {
+    try {
+        const response = await api.getAllRows(page, paginationState.amzTable.pageSize);
+        cachedRows.amzTable = response.content;
+        syncPaginationState("amzTable", response);
+        renderTransactionRowsPage();
+        renderPaginationControls("amzTable", getAllRowsFromDB);
     } catch (error) {
         console.error("Failed to load Amazon rows from DB:", error);
     }
@@ -137,40 +327,32 @@ async function saveProgressAmz() {
         await api.saveAmzTable(data);
         rows.forEach(row => row.dataset.saved = "true");
         alert("Progress has been saved properly");
+        window.location.reload();
     } catch (error) {
         console.error("There was a problem saving Amazon data:", error);
     }
 }
 
 
-async function loadWeeklyTotalsPerPerson() {
+async function loadWeeklyTotalsPerPerson(page = paginationState.workerSummaryTable.currentPage) {
     try {
-        const rows = await api.getWorkerSummary();
-        const tbody = document.querySelector("#workerSummaryTable tbody");
-
-        rows.forEach(row => {
-            const tr = tbody.insertRow();
-            tr.insertCell().textContent = row.weekRange;
-            tr.insertCell().textContent = row.worker;
-            tr.insertCell().textContent = row.weeklyPackageNumPerPerson;
-            tr.insertCell().textContent = row.weeklyAmountPerPerson;
-        });
+        const response = await api.getWorkerSummary(page, paginationState.workerSummaryTable.pageSize);
+        cachedRows.workerSummaryTable = response.content;
+        syncPaginationState("workerSummaryTable", response);
+        renderWorkerSummaryPage();
+        renderPaginationControls("workerSummaryTable", loadWeeklyTotalsPerPerson);
     } catch (error) {
         console.error("Failed to load worker summary:", error);
     }
 }
 
-async function loadWeeklyTotal() {
+async function loadWeeklyTotal(page = paginationState.weeklySummaryTable.currentPage) {
     try {
-        const rows = await api.getMonthlySummary();
-        const tbody = document.querySelector("#weeklySummaryTable tbody");
-
-        rows.forEach(row => {
-            const tr = tbody.insertRow();
-            tr.insertCell().textContent = row.weekRange;
-            tr.insertCell().textContent = row.weeklyPackageNum;
-            tr.insertCell().textContent = row.weeklyAmount;
-        });
+        const response = await api.getMonthlySummary(page, paginationState.weeklySummaryTable.pageSize);
+        cachedRows.weeklySummaryTable = response.content;
+        syncPaginationState("weeklySummaryTable", response);
+        renderWeeklySummaryPage();
+        renderPaginationControls("weeklySummaryTable", loadWeeklyTotal);
     } catch (error) {
         console.error("Failed to load monthly summary:", error);
     }

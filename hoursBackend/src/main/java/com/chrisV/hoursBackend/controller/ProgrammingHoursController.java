@@ -12,7 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/table")
-@CrossOrigin("http://raspberrypi:5500/")
+@CrossOrigin(origins = {"http://raspberrypi:5500", "http://chris-fedora:5500"})
 public class ProgrammingHoursController {
 
     @Autowired

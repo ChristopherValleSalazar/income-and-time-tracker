@@ -5,6 +5,7 @@ import com.chrisV.hoursBackend.dto.WeeklyReportPerPerson;
 import com.chrisV.hoursBackend.model.AmazonNames;
 import com.chrisV.hoursBackend.model.AmazonTransaction;
 import com.chrisV.hoursBackend.service.AmazonServices;
+import org.springframework.data.domain.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +15,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/amzTransaction")
-@CrossOrigin("http://raspberrypi:5500/")
+@CrossOrigin(origins = {"http://raspberrypi:5500", "http://chris-fedora:5500"})
 public class AmazonTransactionController {
 
     @Autowired
@@ -32,8 +33,11 @@ public class AmazonTransactionController {
     }
 
     @GetMapping("/getAllRows")
-    public ResponseEntity<List<AmazonTransaction>> loadAllAmzRows() {
-        return new ResponseEntity<>(service.loadAmzRowsNew(), HttpStatus.OK);
+    public ResponseEntity<Page<AmazonTransaction>> loadAllAmzRows(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return new ResponseEntity<>(service.loadAmzRowsNew(page, size), HttpStatus.OK);
     }
 
     @GetMapping("/getAllWorkerNames")
@@ -42,13 +46,19 @@ public class AmazonTransactionController {
     }
 
     @GetMapping("/getAllTotalPerWeek")
-    public ResponseEntity<List<WeeklyReportGeneral>> loadTotalPerWeek() {
-        return new ResponseEntity<>(service.loadWeeklyTotal(), HttpStatus.OK);
+    public ResponseEntity<Page<WeeklyReportGeneral>> loadTotalPerWeek(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return new ResponseEntity<>(service.loadWeeklyTotal(page, size), HttpStatus.OK);
     }
 
     @GetMapping("/getWeeklyTotalsPerPerson")
-    public ResponseEntity<List<WeeklyReportPerPerson>> loadWeeklyTotalPerPerson() {
-        return new ResponseEntity<>(service.loadWeeklyTotalPerPerson(), HttpStatus.OK);
+    public ResponseEntity<Page<WeeklyReportPerPerson>> loadWeeklyTotalPerPerson(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return new ResponseEntity<>(service.loadWeeklyTotalPerPerson(page, size), HttpStatus.OK);
     }
 }
 
