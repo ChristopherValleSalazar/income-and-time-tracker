@@ -64,9 +64,7 @@ export async function getMonthlySummary(page = 0, size = 10) {
 }
 
 export async function deleteAmzRowById(id) {
-    return request("url", {
+    return request(`/api/amzTransaction/${id}`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
     });
 }

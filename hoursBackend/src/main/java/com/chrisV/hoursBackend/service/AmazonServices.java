@@ -30,6 +30,10 @@ public class AmazonServices {
         repo.saveAll(transactions);
     }
 
+    public void deleteAmzRowById(Long id) {
+        repo.deleteById(id);
+    }
+
     //passing a list of objects to the frontend instead of the old method where I send a map<String, String>
         public Page<AmazonTransaction> loadAmzRowsNew(int page, int size) {
                 Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "dateOfWork"));

@@ -60,6 +60,12 @@ public class AmazonTransactionController {
     ) {
         return new ResponseEntity<>(service.loadWeeklyTotalPerPerson(page, size), HttpStatus.OK);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteAmzRow(@PathVariable Long id) {
+        service.deleteAmzRowById(id);
+        return ResponseEntity.noContent().build();
+    }
 }
 
 
