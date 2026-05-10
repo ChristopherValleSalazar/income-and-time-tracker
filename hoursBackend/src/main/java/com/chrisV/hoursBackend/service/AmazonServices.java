@@ -47,7 +47,7 @@ public class AmazonServices {
    public Page<WeeklyReportGeneral> loadWeeklyTotal(int page, int size) {
         List<AmazonTransaction> transactions = repo.findAll();
         Map<LocalDate, List<AmazonTransaction>> weeklyMap = getFullWeeks(transactions);
-                List<WeeklyReportGeneral> report = convertWeeksToDto(weeklyMap);
+                List<WeeklyReportGeneral> report = new ArrayList<>(convertWeeksToDto(weeklyMap));
                 Collections.reverse(report);
                 return paginateList(report, page, size);
    }
