@@ -36,7 +36,7 @@ public class AmazonServices {
 
     //passing a list of objects to the frontend instead of the old method where I send a map<String, String>
         public Page<AmazonTransaction> loadAmzRowsNew(int page, int size) {
-                Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "dateOfWork"));
+                                Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "dateOfWork"));
                 return repo.findAll(pageable);
     }
 
@@ -48,12 +48,14 @@ public class AmazonServices {
         List<AmazonTransaction> transactions = repo.findAll();
         Map<LocalDate, List<AmazonTransaction>> weeklyMap = getFullWeeks(transactions);
                 List<WeeklyReportGeneral> report = convertWeeksToDto(weeklyMap);
+                Collections.reverse(report);
                 return paginateList(report, page, size);
    }
 
         public Page<WeeklyReportPerPerson> loadWeeklyTotalPerPerson(int page, int size) {
         List<AmazonTransaction> transaction = repo.findAll();
                 List<WeeklyReportPerPerson> report = generateWeeklyTotalsPerPerson(transaction);
+                Collections.reverse(report);
                 return paginateList(report, page, size);
     }
 

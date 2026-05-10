@@ -35,7 +35,7 @@ public class AmazonTransactionController {
     @GetMapping("/getAllRows")
     public ResponseEntity<Page<AmazonTransaction>> loadAllAmzRows(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "7") int size
     ) {
         return new ResponseEntity<>(service.loadAmzRowsNew(page, size), HttpStatus.OK);
     }
@@ -48,7 +48,7 @@ public class AmazonTransactionController {
     @GetMapping("/getAllTotalPerWeek")
     public ResponseEntity<Page<WeeklyReportGeneral>> loadTotalPerWeek(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "7") int size
     ) {
         return new ResponseEntity<>(service.loadWeeklyTotal(page, size), HttpStatus.OK);
     }
@@ -56,7 +56,7 @@ public class AmazonTransactionController {
     @GetMapping("/getWeeklyTotalsPerPerson")
     public ResponseEntity<Page<WeeklyReportPerPerson>> loadWeeklyTotalPerPerson(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "7") int size
     ) {
         return new ResponseEntity<>(service.loadWeeklyTotalPerPerson(page, size), HttpStatus.OK);
     }

@@ -1,7 +1,7 @@
 import * as api from "./api.js";
 import "./theme.js";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 7;
 const paginationState = {
     amzTable: { currentPage: 0, pageSize: PAGE_SIZE, totalPages: 1 },
     workerSummaryTable: { currentPage: 0, pageSize: PAGE_SIZE, totalPages: 1 },
